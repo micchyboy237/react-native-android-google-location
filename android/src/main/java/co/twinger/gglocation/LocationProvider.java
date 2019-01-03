@@ -87,6 +87,10 @@ public class LocationProvider
     mGoogleApiClient.connect();
   }
 
+  public GoogleApiClient getMGoogleApiClient() {
+    return mGoogleApiClient;
+  }
+
   /**
    * Disconnects to Google Play Services - Location
    */
