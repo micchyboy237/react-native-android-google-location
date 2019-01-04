@@ -14,7 +14,8 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 
-public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
+public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
+    implements LocationProvider.LocationCallback {
   // React Class Name as called from JS
   public static final String REACT_CLASS = "RNAndroidGoogleLocation";
   // Unique Name for Log TAG
@@ -34,15 +35,6 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
 
     // Get Location Provider from Google Play Services
     mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), this);
-
-    // Check if all went well and the Google Play Service are available...
-    if (!mLocationProvider.checkPlayServices()) {
-      Log.i(TAG, "Location Provider not available...");
-    } else {
-      // Connect to Play Services
-      mLocationProvider.connect();
-      Log.i(TAG, "Location Provider successfully created.");
-    }
   }
 
   @Override
@@ -115,15 +107,6 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
       reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, params);
     } else {
       Log.i(TAG, "Waiting for CatalystInstance...");
-    }
-  }
-
-  @Override
-  protected void finalize() throws Throwable {
-    super.finalize();
-    // If Location Provider is connected, disconnect.
-    if (mLocationProvider != null && mLocationProvider.connected) {
-      mLocationProvider.disconnect();
     }
   }
 }
