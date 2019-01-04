@@ -1,3 +1,5 @@
+package co.twinger.gglocation;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
