@@ -16,8 +16,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.google.android.gms.location.LocationServices;
 
 
-public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
-    implements LocationProvider.LocationCallback {
+public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
   // React Class Name as called from JS
   public static final String REACT_CLASS = "RNAndroidGoogleLocation";
   // Unique Name for Log TAG
@@ -56,13 +55,21 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
   /*
    * Location Callback as defined by LocationProvider
    */
+
+  // @Override
+  // public void handleNewLocation(Location location) {
+  //   if (location != null) {
+  //     mLastLocation = location;
+  //     Log.i(TAG, "New Location..." + location.toString());
+  //     getLocation();
+  //   }
+  // }
   @Override
-  public void handleNewLocation(Location location) {
-    if (location != null) {
-      mLastLocation = location;
-      Log.i(TAG, "New Location..." + location.toString());
-      getLocation();
-    }
+  public void onLocationResult(LocationResult locationResult) {
+      super.onLocationResult(locationResult);
+      Log.i(TAG, "Location Received");
+      mCurrentLocation = locationResult.getLastLocation();
+      mLastLocation = mCurrentLocation;
   }
 
   /*
@@ -96,7 +103,7 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
       }
     }
     else {
-      Location location = LocationServices.FusedLocationApi.getLastLocation(mLocationProvider.getMGoogleApiClient());
+      Location location = LocationServices.FusedLocationProviderClient.getLastLocation(mLocationProvider.getMGoogleApiClient());
 
       if(location != null) {
         try {
