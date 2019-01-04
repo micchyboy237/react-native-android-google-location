@@ -90,6 +90,12 @@ public class LocationProvider extends FragmentActivity
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        Log.i(TAG, "ActivityResult called");
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
     protected synchronized void buildGoogleApiClient() {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
         mSettingsClient = LocationServices.getSettingsClient(this);
@@ -213,6 +219,9 @@ public class LocationProvider extends FragmentActivity
     protected void onStop() {
         //Remove location update callback here
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
         super.onStop();
     }
 

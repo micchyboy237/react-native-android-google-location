@@ -35,8 +35,12 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
     // Save Context for later use
     mReactContext = reactContext;
 
+    Log.i(TAG, "Initializing Google Location Module:");
+    
     // Get Location Provider from Google Play Services
     mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), new RNAndroidGoogleLocationCallback());
+  
+    Log.i(TAG, "Done Initializing Google Location Module:");
   }
 
   @Override
