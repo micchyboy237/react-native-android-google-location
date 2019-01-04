@@ -61,7 +61,7 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
     if (location != null) {
       mLastLocation = location;
       Log.i(TAG, "New Location..." + location.toString());
-      // getLocation();
+      getLocation();
     }
   }
 
@@ -70,10 +70,7 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
    */
   @ReactMethod
   public void getLocation() {
-    if(mLocationProvider.getMGoogleApiClient() == null) {
-      mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), this);
-    }
-    
+    Log.i(TAG, "Triggering getLocation()");
 
     if (mLastLocation != null) {
       try {
@@ -84,7 +81,7 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
         Longitude = mLastLocation.getLongitude();
         Latitude = mLastLocation.getLatitude();
 
-        Log.i(TAG, "Got new location. Lng: " + Longitude + " Lat: " + Latitude);
+        Log.i(TAG, "mLastLocation exists: Got location. Lng: " + Longitude + " Lat: " + Latitude);
 
         // Create Map with Parameters to send to JS
         WritableMap params = Arguments.createMap();
@@ -110,7 +107,7 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
           Longitude = location.getLongitude();
           Latitude = location.getLatitude();
 
-          Log.i(TAG, "Got new location. Lng: " + Longitude + " Lat: " + Latitude);
+          Log.i(TAG, "New last location generated. Lng: " + Longitude + " Lat: " + Latitude);
 
           // Create Map with Parameters to send to JS
           WritableMap params = Arguments.createMap();
@@ -124,8 +121,9 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
           Log.i(TAG, "Location services disconnected.");
         }
       }
-        
     }
+
+    Log.i(TAG, "Done Triggering getLocation()");
   }
 
   /*

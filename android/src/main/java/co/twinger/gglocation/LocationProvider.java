@@ -98,6 +98,7 @@ public class LocationProvider
     if (mGoogleApiClient.isConnected()) {
       LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
       mGoogleApiClient.disconnect();
+      Log.i(TAG, "Location services disconnection triggered.");
     }
   }
 
@@ -118,6 +119,9 @@ public class LocationProvider
     // We are Connected!
     connected = true;
     // First, get Last Location and return it to Callback
+
+    Log.i(TAG, "Location passes permissions.");
+
     Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
     if (location != null) {
       mLocationCallback.handleNewLocation(location);
@@ -148,6 +152,7 @@ public class LocationProvider
          */
       } catch (IntentSender.SendIntentException e) {
         // Log the error
+        Log.i(TAG, "onConnectionFailed: Some error occurred");
         e.printStackTrace();
       }
     } else {
