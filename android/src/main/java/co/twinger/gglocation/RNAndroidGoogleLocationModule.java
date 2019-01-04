@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -16,8 +17,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 
-public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
-    implements LocationCallback {
+public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
   // React Class Name as called from JS
   public static final String REACT_CLASS = "RNAndroidGoogleLocation";
   // Unique Name for Log TAG
@@ -36,12 +36,25 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
     mReactContext = reactContext;
 
     // Get Location Provider from Google Play Services
-    mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), this);
+    mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), new RNAndroidGoogleLocationCallback());
   }
 
   @Override
   public String getName() {
     return REACT_CLASS;
+  }
+
+  class RNAndroidGoogleLocationCallback extends LocationCallback {
+    @Override
+    public void onLocationResult(LocationResult locationResult) {
+        super.onLocationResult(locationResult);
+        
+        RNAndroidGoogleLocationModule.this.mLastLocation = locationResult.getLastLocation();
+
+        Log.i(TAG, "Location Received: " + RNAndroidGoogleLocationModule.this.mLastLocation.toString());
+
+        RNAndroidGoogleLocationModule.this.getLocation();
+    }
   }
 
   /*
@@ -56,16 +69,6 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
   //     getLocation();
   //   }
   // }
-  @Override
-  public void onLocationResult(LocationResult locationResult) {
-      super.onLocationResult(locationResult);
-      
-      mLastLocation = locationResult.getLastLocation();
-
-      Log.i(TAG, "Location Received: " + mLastLocation.toString());
-
-      getLocation();
-  }
 
   /*
    * Location Provider as called by JS
