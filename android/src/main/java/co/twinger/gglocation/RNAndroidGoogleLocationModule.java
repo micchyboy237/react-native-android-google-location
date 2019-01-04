@@ -13,8 +13,6 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import com.google.android.gms.location.LocationServices;
-
 
 public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
   // React Class Name as called from JS
@@ -67,9 +65,12 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
   @Override
   public void onLocationResult(LocationResult locationResult) {
       super.onLocationResult(locationResult);
-      Log.i(TAG, "Location Received");
-      mCurrentLocation = locationResult.getLastLocation();
-      mLastLocation = mCurrentLocation;
+      
+      mLastLocation = locationResult.getLastLocation();
+
+      Log.i(TAG, "Location Received: " + mLastLocation.toString());
+
+      getLocation();
   }
 
   /*
@@ -100,33 +101,6 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
       } catch (Exception e) {
         e.printStackTrace();
         Log.i(TAG, "Location services disconnected.");
-      }
-    }
-    else {
-      Location location = LocationServices.FusedLocationProviderClient.getLastLocation(mLocationProvider.getMGoogleApiClient());
-
-      if(location != null) {
-        try {
-          double Longitude;
-          double Latitude;
-
-          // Receive Longitude / Latitude from (updated) Last Location
-          Longitude = location.getLongitude();
-          Latitude = location.getLatitude();
-
-          Log.i(TAG, "New last location generated. Lng: " + Longitude + " Lat: " + Latitude);
-
-          // Create Map with Parameters to send to JS
-          WritableMap params = Arguments.createMap();
-          params.putDouble("Longitude", Longitude);
-          params.putDouble("Latitude", Latitude);
-
-          // Send Event to JS to update Location
-          sendEvent(mReactContext, "updateLocation", params);
-        } catch (Exception e) {
-          e.printStackTrace();
-          Log.i(TAG, "Location services disconnected.");
-        }
       }
     }
 

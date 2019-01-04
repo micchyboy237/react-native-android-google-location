@@ -172,6 +172,7 @@ public class LocationProvider extends FragmentActivity implements GoogleApiClien
 
     @Override
     public void onLocationChanged(Location location) {
+        Log.i(TAG, "Location Changed: " + location.toString());
         String latitude = String.valueOf(location.getLatitude());
         String longitude = String.valueOf(location.getLongitude());
 
