@@ -70,6 +70,11 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule
    */
   @ReactMethod
   public void getLocation() {
+    if(mLocationProvider.getMGoogleApiClient() == null) {
+      mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), this);
+    }
+    
+
     if (mLastLocation != null) {
       try {
         double Longitude;
