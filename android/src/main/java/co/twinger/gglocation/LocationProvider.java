@@ -61,13 +61,13 @@ public class LocationProvider extends FragmentActivity
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
     /* For Google Fused API */
-    private Context context;
+    private Context mContext;
     private ProgressBar progressBar;
     private AsyncTask task;
 
-    public LocationProvider(Context mContext, LocationCallback updateCallback) {
+    public LocationProvider(Context context, LocationCallback updateCallback) {
       // Save current Context
-      context = mContext;
+      mContext = context;
       // Save Location Callback
       this.mLocationCallback = updateCallback;
     }
@@ -77,7 +77,7 @@ public class LocationProvider extends FragmentActivity
         super.onStart();
 
         try {
-            int permissionCheck = PermissionChecker.checkCallingOrSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
+            int permissionCheck = PermissionChecker.checkCallingOrSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
             if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
                 Log.i(TAG, "Permission is already allowed. Build Client");
                 buildGoogleApiClient();
@@ -97,7 +97,7 @@ public class LocationProvider extends FragmentActivity
     }
 
     protected synchronized void buildGoogleApiClient() {
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mSettingsClient = LocationServices.getSettingsClient(this);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -123,8 +123,8 @@ public class LocationProvider extends FragmentActivity
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(30 * 1000);
-        mLocationRequest.setFastestInterval(5 * 1000);
+        mLocationRequest.setInterval(10 * 1000);
+        mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
@@ -204,7 +204,7 @@ public class LocationProvider extends FragmentActivity
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            int permissionCheck = PermissionChecker.checkCallingOrSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
+            int permissionCheck = PermissionChecker.checkCallingOrSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
             if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
                 Log.i(TAG, "User Allowed Permission Build Google Client");
                 buildGoogleApiClient();
