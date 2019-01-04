@@ -46,14 +46,7 @@ import java.util.LinkedHashMap;
 
 public class LocationProvider extends FragmentActivity 
       implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, ResultCallback<LocationSettingsResult> {
-    
-    /**
-     * Location Callback interface to be defined in Module
-     */
-    public abstract interface LocationCallback {
-      public abstract void onLocationResult(Location location);
-    }
-  
+
     public static final String TAG = LocationProvider.class.getSimpleName();
 
     private static final int REQUEST_CHECK_SETTINGS = 214;
