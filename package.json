@@ -1,6 +1,6 @@
 {
   "name": "react-native-android-google-location",
-  "version": "1.1.8",
+  "version": "1.2.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,11 +17,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/twinger/react-native-android-google-location.git"
+    "url": "git+https://github.com/micchyboy237/react-native-android-google-location.git"
   },
-  "author": "TienDH",
-  "email": "twinger.co@gmail.com",
-  "url": "https://github.com/twinger",
-  "website": "twinger.co",
+  "author": "micchyboy",
+  "email": "micchyboy.developer@gmail.com",
+  "url": "https://github.com/micchyboy237/react-native-android-google-location",
   "license": "MIT"
 }

@@ -125,8 +125,8 @@ public class LocationProvider
     public void onConnected(@Nullable Bundle bundle) {
         Log.i(TAG, "onConnected");
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(10 * 1000);
-        mLocationRequest.setFastestInterval(2000);
+        mLocationRequest.setInterval(60 * 1000);
+        mLocationRequest.setFastestInterval(30 * 1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
