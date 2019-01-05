@@ -15,10 +15,8 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.PermissionChecker;
 import android.util.Log;
-import android.widget.ProgressBar;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -30,7 +28,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
-// import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
@@ -44,7 +42,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-public class LocationProvider extends FragmentActivity 
+public class LocationProvider
       implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, ResultCallback<LocationSettingsResult> {
 
     public static final String TAG = LocationProvider.class.getSimpleName();
@@ -58,73 +56,84 @@ public class LocationProvider extends FragmentActivity
     private FusedLocationProviderClient mFusedLocationClient;
     private SettingsClient mSettingsClient;
     private LocationCallback mLocationCallback;
+    private RNAndroidGoogleLocationModule mLocationModule;
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
     /* For Google Fused API */
     private Context mContext;
-    private ProgressBar progressBar;
-    private AsyncTask task;
 
-    public LocationProvider(Context context, LocationCallback updateCallback) {
+    public LocationProvider(Context context, RNAndroidGoogleLocationModule locationModule) {
       // Save current Context
       mContext = context;
       // Save Location Callback
-      this.mLocationCallback = updateCallback;
+      mLocationModule = locationModule;
+
+      this.initializeBuilder();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        try {
-            int permissionCheck = PermissionChecker.checkCallingOrSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
-            if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-                Log.i(TAG, "Permission is already allowed. Build Client");
-                buildGoogleApiClient();
-            } else {
-                Log.i(TAG, "Permission is requested");
-                ActivityCompat.requestPermissions(LocationProvider.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    public void initializeBuilder() {
+        if (ActivityCompat.checkSelfPermission(mContext,
+        android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        // && ActivityCompat.checkSelfPermission(mContext,
+        //     android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        ) {
+          Log.i(TAG, "initializeBuilder");
+          // ActivityCompat.requestPermissions((Activity) mContext, new
+          // String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 10);
+          // ActivityCompat.requestPermissions((Activity) mContext, new
+          // String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, 20);
+          buildGoogleApiClient();
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        Log.i(TAG, "ActivityResult called");
-        super.onActivityResult(requestCode, resultCode, data);
-    }
 
     protected synchronized void buildGoogleApiClient() {
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mSettingsClient = LocationServices.getSettingsClient(this);
+        Log.i(TAG, "buildGoogleApiClient");
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(mContext);
+        mSettingsClient = LocationServices.getSettingsClient(mContext);
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
+        mGoogleApiClient = new GoogleApiClient.Builder(mContext)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
 
         connectGoogleClient();
+
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                Log.i(TAG, "onLocationResult");
+                super.onLocationResult(locationResult);
+
+                mCurrentLocation = locationResult.getLastLocation();
+
+                mLocationModule.handleNewLocation(mCurrentLocation);
+
+                onLocationChanged(mCurrentLocation);
+            }
+        };
     }
 
     private void connectGoogleClient() {
+        Log.i(TAG, "connectGoogleClient");
         GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
-        int resultCode = googleAPI.isGooglePlayServicesAvailable(this);
+        int resultCode = googleAPI.isGooglePlayServicesAvailable(mContext);
         if (resultCode == ConnectionResult.SUCCESS) {
             mGoogleApiClient.connect();
         } else {
-            int REQUEST_GOOGLE_PLAY_SERVICE = 988;
-            googleAPI.getErrorDialog(this, resultCode, REQUEST_GOOGLE_PLAY_SERVICE);
+            Log.i(TAG, "Failed getting isGooglePlayServicesAvailable");
+            // int REQUEST_GOOGLE_PLAY_SERVICE = 988;
+            // googleAPI.getErrorDialog(mContext, resultCode, REQUEST_GOOGLE_PLAY_SERVICE);
         }
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        Log.i(TAG, "onConnected");
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(10 * 1000);
-        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setFastestInterval(2000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
@@ -146,12 +155,7 @@ public class LocationProvider extends FragmentActivity
                 int statusCode = ((ApiException) e).getStatusCode();
                 switch (statusCode) {
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        try {
-                            ResolvableApiException rae = (ResolvableApiException) e;
-                            rae.startResolutionForResult(LocationProvider.this, REQUEST_CHECK_SETTINGS);
-                        } catch (IntentSender.SendIntentException sie) {
-                            Log.i(TAG, "PendingIntent unable to execute request.");
-                        }
+                        Log.i(TAG, "Location failed to connect: RESOLUTION_REQUIRED");
                         break;
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         Log.i(TAG, "Location settings are inadequate, and cannot be fixed here. Fix in Settings.");
@@ -167,22 +171,24 @@ public class LocationProvider extends FragmentActivity
 
     @Override
     public void onConnectionSuspended(int i) {
+        Log.i(TAG, "onConnectionSuspended");
         connectGoogleClient();
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        buildGoogleApiClient();
+        Log.i(TAG, "onConnectionFailed");
+        this.initializeBuilder();
     }
 
     @Override
     public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
-
+        Log.i(TAG, "onResult");
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.i(TAG, "Location Changed: " + location.toString());
+        Log.i(TAG, "onLocationChanged: " + location.toString());
         String latitude = String.valueOf(location.getLatitude());
         String longitude = String.valueOf(location.getLongitude());
 
@@ -195,34 +201,33 @@ public class LocationProvider extends FragmentActivity
 
     @SuppressLint("MissingPermission")
     private void requestLocationUpdate() {
+        Log.i(TAG, "requestLocationUpdate");
         mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
     }
 
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    // @Override
+    // public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    //     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            int permissionCheck = PermissionChecker.checkCallingOrSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
-            if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-                Log.i(TAG, "User Allowed Permission Build Google Client");
-                buildGoogleApiClient();
-            } else {
-                Log.i(TAG, "User Denied Permission");
-            }
-        }
+    //     if (requestCode == REQUEST_LOCATION_PERMISSION) {
+    //         int permissionCheck = PermissionChecker.checkCallingOrSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
+    //         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+    //             Log.i(TAG, "User Allowed Permission Build Google Client");
+    //             buildGoogleApiClient();
+    //         } else {
+    //             Log.i(TAG, "User Denied Permission");
+    //         }
+    //     }
 
-    }
+    // }
 
-    @Override
-    protected void onStop() {
+    public void disconnect() {
         //Remove location update callback here
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
-        super.onStop();
     }
 
     // @Override

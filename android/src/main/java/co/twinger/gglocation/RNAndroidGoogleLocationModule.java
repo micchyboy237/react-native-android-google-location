@@ -38,7 +38,7 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
     Log.i(TAG, "Initializing Google Location Module:");
     
     // Get Location Provider from Google Play Services
-    mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), new RNAndroidGoogleLocationCallback());
+    mLocationProvider = new LocationProvider(mReactContext.getApplicationContext(), this);
   
     Log.i(TAG, "Done Initializing Google Location Module:");
   }
@@ -48,31 +48,32 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
     return REACT_CLASS;
   }
 
-  class RNAndroidGoogleLocationCallback extends LocationCallback {
-    @Override
-    public void onLocationResult(LocationResult locationResult) {
-        super.onLocationResult(locationResult);
+  // class RNAndroidGoogleLocationCallback extends LocationCallback {
+  //   @Override
+  //   public void onLocationResult(LocationResult locationResult) {
+  //       Log.i(TAG, "onLocationResult");
+  //       super.onLocationResult(locationResult);
         
-        RNAndroidGoogleLocationModule.this.mLastLocation = locationResult.getLastLocation();
+  //       RNAndroidGoogleLocationModule.this.mLastLocation = locationResult.getLastLocation();
 
-        Log.i(TAG, "Location Received: " + RNAndroidGoogleLocationModule.this.mLastLocation.toString());
+  //       Log.i(TAG, "Location Received: " + RNAndroidGoogleLocationModule.this.mLastLocation.toString());
 
-        RNAndroidGoogleLocationModule.this.getLocation();
-    }
-  }
+  //       RNAndroidGoogleLocationModule.this.getLocation();
+  //   }
+  // }
 
   /*
    * Location Callback as defined by LocationProvider
    */
 
   // @Override
-  // public void handleNewLocation(Location location) {
-  //   if (location != null) {
-  //     mLastLocation = location;
-  //     Log.i(TAG, "New Location..." + location.toString());
-  //     getLocation();
-  //   }
-  // }
+  public void handleNewLocation(Location location) {
+    if (location != null) {
+      mLastLocation = location;
+      Log.i(TAG, "handleNewLocation..." + location.toString());
+      getLocation();
+    }
+  }
 
   /*
    * Location Provider as called by JS
@@ -104,6 +105,9 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
         Log.i(TAG, "Location services disconnected.");
       }
     }
+    else {
+      mLocationProvider.initializeBuilder();
+    }
 
     Log.i(TAG, "Done Triggering getLocation()");
   }
@@ -117,5 +121,16 @@ public class RNAndroidGoogleLocationModule extends ReactContextBaseJavaModule {
     } else {
       Log.i(TAG, "Waiting for CatalystInstance...");
     }
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    // If Location Provider is connected, disconnect.
+    if (mLocationProvider != null) {
+      Log.i(TAG, "Disconnecting LocationProvider...");
+      mLocationProvider.disconnect();
+    }
+
+    super.finalize();
   }
 }
