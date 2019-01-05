@@ -3,26 +3,18 @@ package co.twinger.gglocation;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Looper;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.PermissionChecker;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -205,23 +197,6 @@ public class LocationProvider
         mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
     }
 
-
-    // @Override
-    // public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-    //     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-    //     if (requestCode == REQUEST_LOCATION_PERMISSION) {
-    //         int permissionCheck = PermissionChecker.checkCallingOrSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
-    //         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-    //             Log.i(TAG, "User Allowed Permission Build Google Client");
-    //             buildGoogleApiClient();
-    //         } else {
-    //             Log.i(TAG, "User Denied Permission");
-    //         }
-    //     }
-
-    // }
-
     public void disconnect() {
         //Remove location update callback here
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
@@ -229,11 +204,4 @@ public class LocationProvider
             mGoogleApiClient.disconnect();
         }
     }
-
-    // @Override
-    // protected void onDestroy() {
-    //     //Remove location update callback here
-    //     mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-    //     super.onDestroy();
-    // }
 }
